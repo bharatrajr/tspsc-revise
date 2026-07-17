@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Revise — TSPSC Group 1 Mains SRS</title>
+<meta name="theme-color" content="#0f172a">
+<meta name="description" content="Spaced repetition revision tool for TSPSC Group 1 Mains preparation">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="app">
+
+  <header class="topbar">
+    <div class="brand">Revise</div>
+    <nav class="tabs" id="tabs">
+      <button class="tab-btn active" data-view="review">Review <span class="badge" id="due-badge">0</span></button>
+      <button class="tab-btn" data-view="add">Add</button>
+      <button class="tab-btn" data-view="browse">Browse</button>
+      <button class="tab-btn" data-view="stats">Stats</button>
+      <button class="tab-btn" data-view="settings">Settings</button>
+    </nav>
+  </header>
+
+  <main id="views">
+
+    <!-- REVIEW VIEW -->
+    <section id="view-review" class="view active">
+      <div id="review-empty" class="empty-state hidden">
+        <h2>All caught up</h2>
+        <p>No cards due right now. Paste some new content in <strong>Add</strong>, or come back later.</p>
+      </div>
+      <div id="review-session" class="hidden">
+        <div class="review-meta">
+          <span id="review-progress">0 / 0</span>
+          <span id="review-tag" class="tag-chip"></span>
+        </div>
+        <div class="card-surface">
+          <div id="card-content" class="card-content"></div>
+        </div>
+        <div id="show-answer-row" class="action-row">
+          <button id="btn-show" class="btn primary big">Show Answer <span class="kbd">Space</span></button>
+        </div>
+        <div id="rating-row" class="rating-row hidden">
+          <button class="btn rating again" data-rating="1">
+            <span class="rating-label">Again</span><span class="rating-interval" id="int-1"></span><span class="kbd">1</span>
+          </button>
+          <button class="btn rating hard" data-rating="2">
+            <span class="rating-label">Hard</span><span class="rating-interval" id="int-2"></span><span class="kbd">2</span>
+          </button>
+          <button class="btn rating good" data-rating="3">
+            <span class="rating-label">Good</span><span class="rating-interval" id="int-3"></span><span class="kbd">3</span>
+          </button>
+          <button class="btn rating easy" data-rating="4">
+            <span class="rating-label">Easy</span><span class="rating-interval" id="int-4"></span><span class="kbd">4</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ADD VIEW -->
+    <section id="view-add" class="view">
+      <div class="add-grid">
+        <div class="add-main">
+          <div class="field-row">
+            <input type="text" id="source-title" placeholder="Source title (e.g. The Hindu — 12 Jul 2026, Telangana irrigation policy)">
+          </div>
+          <div class="field-row">
+            <input type="text" id="source-tags" placeholder="Tags, comma separated (e.g. polity, telangana, current-affairs)">
+          </div>
+          <div class="toolbar">
+            <button id="btn-mark-cloze" class="btn small" title="Wrap selected text as a new cloze blank">Mark Cloze <span class="kbd">Ctrl+Shift+C</span></button>
+            <button id="btn-mark-cloze-same" class="btn small" title="Wrap selected text into the same blank as the last one">Group With Last <span class="kbd">Ctrl+Shift+G</span></button>
+            <button id="btn-clear-marks" class="btn small ghost">Clear Marks</button>
+            <span class="spacer"></span>
+            <select id="ai-provider-inline"></select>
+            <button id="btn-ai-suggest" class="btn small accent">✦ Suggest Cards with AI</button>
+          </div>
+          <div id="paste-area" class="paste-area" contenteditable="true" data-placeholder="Paste article / notes here (HTML formatting is preserved). Select a word or phrase and click &quot;Mark Cloze&quot; to blank it out."></div>
+          <div class="action-row">
+            <button id="btn-create-cards" class="btn primary">Create Cards from Marks</button>
+            <span id="cloze-count-hint" class="hint"></span>
+          </div>
+        </div>
+        <div class="add-side">
+          <h3>AI Suggestions</h3>
+          <div id="ai-status" class="hint"></div>
+          <div id="ai-suggestions" class="suggestion-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BROWSE VIEW -->
+    <section id="view-browse" class="view">
+      <div class="browse-toolbar">
+        <input type="text" id="browse-search" placeholder="Search cards...">
+        <select id="browse-tag-filter"><option value="">All tags</option></select>
+        <select id="browse-state-filter">
+          <option value="">All states</option>
+          <option value="0">New</option>
+          <option value="2">Review</option>
+          <option value="3">Relearning</option>
+        </select>
+        <span class="spacer"></span>
+        <span id="browse-count" class="hint"></span>
+      </div>
+      <div id="browse-list" class="browse-list"></div>
+    </section>
+
+    <!-- STATS VIEW -->
+    <section id="view-stats" class="view">
+      <div class="stats-grid" id="stats-grid"></div>
+      <div class="stats-chart-wrap">
+        <h3>Reviews — last 14 days</h3>
+        <canvas id="stats-chart" width="700" height="220"></canvas>
+      </div>
+    </section>
+
+    <!-- SETTINGS VIEW -->
+    <section id="view-settings" class="view">
+      <div class="settings-form">
+
+        <h3>AI Providers</h3>
+        <p class="hint">Keys are stored only in this browser's local database. Calls go directly from your browser to the provider — nothing passes through a server.</p>
+
+        <label>Default provider
+          <select id="set-provider">
+            <option value="anthropic">Claude (Anthropic)</option>
+            <option value="openai">OpenAI</option>
+            <option value="gemini">Gemini (Google)</option>
+          </select>
+        </label>
+
+        <label>Anthropic API key
+          <input type="password" id="key-anthropic" placeholder="sk-ant-...">
+        </label>
+        <label>Anthropic model
+          <input type="text" id="model-anthropic" placeholder="claude-sonnet-5">
+        </label>
+        <label>OpenAI API key
+          <input type="password" id="key-openai" placeholder="sk-...">
+        </label>
+        <label>OpenAI model
+          <input type="text" id="model-openai" placeholder="gpt-4.1">
+        </label>
+        <label>Gemini API key
+          <input type="password" id="key-gemini" placeholder="AIza...">
+        </label>
+        <label>Gemini model
+          <input type="text" id="model-gemini" placeholder="gemini-2.0-flash">
+        </label>
+        <p class="hint">Model names change over time — if a request fails with a "model not found" style error, check the provider's current docs and update the field here.</p>
+
+        <h3>Scheduling</h3>
+        <label>Target retention: <span id="retention-val">90%</span>
+          <input type="range" id="set-retention" min="0.75" max="0.97" step="0.01" value="0.9">
+        </label>
+        <label>New cards per day
+          <input type="number" id="set-new-limit" min="1" max="200" value="20">
+        </label>
+        <label>Reviews per day (0 = unlimited)
+          <input type="number" id="set-review-limit" min="0" max="1000" value="0">
+        </label>
+
+        <h3>Backup</h3>
+        <div class="action-row">
+          <button id="btn-export" class="btn">Export JSON Backup</button>
+          <button id="btn-import" class="btn">Import JSON Backup</button>
+          <input type="file" id="import-file" accept="application/json" class="hidden">
+        </div>
+
+        <div class="action-row">
+          <button id="btn-save-settings" class="btn primary">Save Settings</button>
+          <span id="settings-saved-hint" class="hint"></span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
